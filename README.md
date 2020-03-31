@@ -8,6 +8,3 @@
 6. New Postgres Function such as array_length , array_agg etc.
 7. Working with CTEs
 
-
-DVD_Rental Dataset
-![DVD_Rental Dataset](https://sp.postgresqltutorial.com/wp-content/uploads/2018/03/dvd-rental-sample-database-diagram.png)
