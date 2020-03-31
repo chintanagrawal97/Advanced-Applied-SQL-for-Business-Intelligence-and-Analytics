@@ -1,0 +1,32 @@
+
+So we will need to aggregate all the payments for our rentals to comute the gross revenue per film and then 
+find the number of actors in that movie -- > then find the movie where the average gross per actor is highest 
+
+==============
+with base_table as (
+		select film_actor.actor_id ,payment.amount , inventory.inventory_id,film.film_id
+		from rental 
+		inner join payment on rental.rental_id = payment.rental_id 
+		inner join inventory on rental.inventory_id = inventory.inventory_id 
+		inner join film on film.film_id = inventory.film_id 
+		inner join film_actor on film_actor.film_id = film.film_id 
+), gross_table as 
+(
+		select f.film_id ,f.title, sum( p.amount) as Gross 
+		from film f 
+		inner join inventory i on i.film_id = f.film_id 
+		inner join rental r on r.inventory_id = i.inventory_id
+		inner join payment p on p.rental_id = r.rental_id
+		group by 1 
+) , highest_gross as (
+		select gross_table.title ,gross_table.gross, array_length(array_agg(distinct bt.actor_id),1) as Number_of_actors
+		from base_table bt 
+		inner join gross_table on gross_table.film_id = bt.film_id
+		group by 1,2
+		order by Number_of_actors desc
+)
+
+select highest_gross.title , (highest_gross.gross/highest_gross.number_of_actors) as Average_Gross_per_Actor
+from highest_gross
+order by Average_Gross_per_Actor desc
+
