@@ -1,0 +1,27 @@
+with top10customer as (
+				select
+				c.customer_id , sum(p.amount ) as spend
+				From customer c 
+				inner join payment p 
+				on c.customer_id = p.customer_id 
+				group by 1 
+				order by 2 desc
+				limit 10  )
+
+
+select t.Amount_Spend_In_Store,t.store_id ,t.Name
+FROM 
+(
+		select i.store_id , concat(c.first_name,' ', c.last_name ) as Name  ,p.amount ,
+		sum(p.amount ) over(PARTITION BY i.store_id , c.customer_id ) as Amount_Spend_In_Store ,
+		row_number() over (PARTITION BY i.store_id , c.customer_id)
+		FROM inventory i 
+		inner join rental r 
+		on i.inventory_id = r.inventory_id 
+		inner join payment p 
+		on p.rental_id = r.rental_id 
+		inner join top10customer
+		on top10customer.customer_id = p.customer_id
+		inner join customer c 
+		on c.customer_id = top10customer.customer_id 
+)t where t.row_number = 1
