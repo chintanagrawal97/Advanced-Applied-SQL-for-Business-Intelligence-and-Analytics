@@ -1,0 +1,30 @@
+1. Compute the Total spend by each customer in first 7 days & 14 days of the first purchase . 
+2. Compute the Life Time Value metrics for the customeer Spend
+
+--This will give the first order for each customers 
+with bt as (
+		select * from (select p.customer_id,p.payment_id , p.payment_date ,
+		row_number() over (partition by p.customer_id order by p.payment_date)
+		From payment p)t where t.row_number = 1 )
+		
+
+
+SELECT bt.*, 
+
+--Compute the sum of purchase from the first date till the end of that week 
+(select sum(p2.amount)
+from payment p2 
+where p2.customer_id = bt.customer_id AND p2.payment_date 
+BETWEEN bt.payment_date and bt.payment_date + INTERVAL '7 days') as first_7days ,
+(
+select sum(p2.amount)
+from payment p2 
+where p2.customer_id = bt.customer_id AND p2.payment_date 
+BETWEEN bt.payment_date and bt.payment_date + INTERVAL '14 days') as first_14days , 
+--This will compute the LTV
+(
+select sum(p2.amount)
+FROM payment p2 
+WHERE p2.customer_id = bt.customer_id) as LTV
+
+FROM bt
